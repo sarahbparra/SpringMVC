@@ -46,9 +46,15 @@
     <label>Facultad: </label>
     <select name="facultad" id="idFacultad">
         <option></option>
-        <option value="1">Informática</option>
-        <option value="2">Biología</option>
+        <option th:each="facultad : ${facultades}" th:value="${facultad.id}" 
+        th:text="${facultad.nombre}"></option>
+
+
+
+        <!-- <option value="1">Informática</option>
+        <option value="2">Biología</option> -->
     </select>
+
     <input type="submit" value="Alta">
 
    </form>
