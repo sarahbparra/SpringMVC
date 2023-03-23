@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -43,19 +45,31 @@ public class Estudiante implements Serializable{
     private String nombre; 
     private String primerApellido; 
     private String segundoApellido; 
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaAlta; 
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaNacimiento; 
+   
     private Genero genero; 
     private double beca; 
 
     // private int idFacultad; Esto no es necesario ya que con JoinColumn, esta columna se crea de manera automática. 
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST) 
     @JoinColumn(name = "idFacultad")
     private Facultad facultad; 
 
     // Unión con teléfonos 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST, mappedBy = "estudiante")
+    //Se usa el fetchtype a lazy porque 
+    //Eager está buscando todo el rato las relaciones. Si quieres borrar estudiante y con ello eléfono. 
+    //Y además teléfono estaba en persist y se estaba fastidiando por eso. 
+    //LAZY SIEMPRE. No consume recursos permanentemente. 
+    //La foreign key solo se pone en el lado de muchos. 
+    //Borrar padre y que se borren los hijos, aquí no se puede. Da igual el tipo de cascadetype. 
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "estudiante")
     private List<Telefono> telefonos; 
     
 
@@ -64,3 +78,5 @@ public class Estudiante implements Serializable{
     }
     
 }
+
+//Los teléfonos se quieren eliminar por idEstudiante, hay que usar consulta de sql. 

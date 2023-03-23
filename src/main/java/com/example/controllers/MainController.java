@@ -2,13 +2,16 @@ package com.example.controllers;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -69,8 +72,10 @@ public ModelAndView listar(){
 public String formularioAltaEstudiante(Model model){
 
    List<Facultad> facultades = facultadService.findaAll(); 
+
+   Estudiante estudiante = new Estudiante();
    
-    model.addAttribute("estudiante", new Estudiante()); 
+    model.addAttribute("estudiante", estudiante); 
     model.addAttribute("facultades", facultades); 
 
     return "views/formularioAltaEstudiante"; 
@@ -79,16 +84,14 @@ public String formularioAltaEstudiante(Model model){
 /**
  * Método que recibe los datos procedentes de los controles del formulario 
  */
-@PostMapping("/altaEstudiante")
+@PostMapping("/altaModificacionEstudiante")
 //El método altaEstudiante() tiene que recibir un atributo del modelo. 
 public String altaEstudiante(@ModelAttribute Estudiante estudiante, 
         @RequestParam(name = "numerosTelefonos") String telefonosRecibidos){
 
     LOG.info("teléfonos recibidos:  " + telefonosRecibidos);
 
-    //Ahora se busca pasar un String a una lista. Si únicamente se hace esto, 
-    //si Teléfonos es null, el comando de split dará error. 
-    //Hay que ponerlo todo dentro del if 
+    estudianteService.save(estudiante);
 
     List<String> listadoNumerosTelefonos = null; 
 
@@ -98,9 +101,12 @@ public String altaEstudiante(@ModelAttribute Estudiante estudiante,
      listadoNumerosTelefonos = Arrays.asList(arrayTelefonos); 
     }
     
-    estudianteService.save(estudiante);
 
     if(listadoNumerosTelefonos != null){
+
+        telefonoService.deleteByEstudiante(estudiante);
+
+        //Borrar todos los teléfonos que tenga el estudiante, si hay que insertar nuevos.
 
         listadoNumerosTelefonos.stream().forEach(n -> {
             Telefono telefonoObject = Telefono
@@ -118,6 +124,48 @@ public String altaEstudiante(@ModelAttribute Estudiante estudiante,
 
 }
     
+
+/**
+ * Creo que método para borrar 
+ */
+
+ //no puede ser public void porque el controller siempre genera algo (vistas)
+
+ @GetMapping("/borrar/{id}")
+ public String borrarEstudiante(@PathVariable(name = "id") int idEstudiante){
+
+    estudianteService.delete(estudianteService.findById(idEstudiante));
+    return "redirect:/listar"; 
+ }
+
+/**
+ * Muestra el formulario para actualizar un estudiante. 
+
+ */
+ @GetMapping("/frmActualizar/{id}")
+ public String frmActualizarEstudiante(@PathVariable(name = "id") int idEstudiante, Model model){
+
+    //Evita el null pointer exception 
+    Estudiante estudiante = estudianteService.findById(idEstudiante); 
+
+    List<Telefono> todosTelefonos = telefonoService.findaAll(); 
+
+    List<Telefono> telefonosDelEstudiante = todosTelefonos.stream()
+    .filter(t -> t.getEstudiante().getId() == idEstudiante)
+    .collect(Collectors.toList());
+
+    String numerosDeTelefono = telefonosDelEstudiante.stream().map(t -> t.getNumero()).collect(Collectors.joining(";"));
+
+    List<Facultad> facultades = facultadService.findaAll(); 
+
+    model.addAttribute("estudiante", estudiante); 
+    model.addAttribute("telefonos", numerosDeTelefono); 
+    model.addAttribute("facultades", facultades); 
+
+    return "views/formularioAltaEstudiante"; 
+ }
+
+
 }
 
 
