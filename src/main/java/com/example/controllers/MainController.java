@@ -165,6 +165,23 @@ public String altaEstudiante(@ModelAttribute Estudiante estudiante,
     return "views/formularioAltaEstudiante"; 
  }
 
+ /**Voy a hacer un método chiquitín para sacar los detalles de estudiantes */
+
+ @GetMapping("/detalles/{id}")
+ public String detallesEstudiante(@PathVariable(name = "id") int id, Model model){
+
+    Estudiante estudiante = estudianteService.findById(id); 
+    List<Telefono> telefonos = telefonoService.findByEstudiante(estudiante); 
+
+    List<String> numerosTelefono = telefonos.stream()
+    .map(t -> t.getNumero())
+    .collect(Collectors.toList());  
+    
+    model.addAttribute("estudiante", estudiante); 
+    model.addAttribute("telefonos", numerosTelefono); 
+
+    return "views/detallesEstudiante"; 
+ }
 
 }
 

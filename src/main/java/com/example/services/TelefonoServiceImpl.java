@@ -48,6 +48,15 @@ public class TelefonoServiceImpl implements TelefonoService{
         telefonoDao.deleteByEstudiante(estudiante); 
     }
 
+    @Override
+    public List<Telefono> findByEstudiante(Estudiante estudiante) {
+        
+        return telefonoDao.findByEstudiante(estudiante); 
+    
+    }
+
+    
+
     
     
 

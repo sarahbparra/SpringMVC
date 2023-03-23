@@ -1,5 +1,7 @@
 package com.example.dao;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.entities.Estudiante;
@@ -20,7 +22,7 @@ public interface TelefonoDao extends JpaRepository<Telefono, Integer>{
 
     //esto ha salido de poner solo findByEstudiante ctrl+space uuu
 
-    // List<Telefono> findByEstudiante(Object estudiante);
+    List<Telefono> findByEstudiante(Estudiante estudiante);
 
     //No estaba inicialmente, porque teníamos el CRUD repository. Si quieres usar tus propias consultas, 
     //genera la implementación de ese método. 
